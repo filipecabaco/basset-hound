@@ -7,7 +7,7 @@ import org.bassethound.model.Source
   * Provides a Stream of String composed of all the lines in the given source
   */
 
-object LineFeeder extends Feeder[String,String] {
+object LineFeeder extends Feeder[String] {
 
   final val Pattern = "\\n".r
 
@@ -17,7 +17,7 @@ object LineFeeder extends Feeder[String,String] {
     * @param source Incoming String with all the contents from a Reader
     * @return Stream with relevant information
     */
-  override def digest(source: Source[String, String]): Stream[String] = {
+  override def digest(source: Source[_, String]): Stream[String] = {
      Pattern.split(source.content.mkString("\n")).toStream
   }
 }
