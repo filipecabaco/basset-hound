@@ -27,7 +27,7 @@ class NumericHeuristicTest extends FunSuite {
 
   test("test filter function with non candidate") {
     val res = new NumericHeuristic().filterFunc(("A",0))
-    res shouldBe true
+    res shouldBe false
   }
 
 }
