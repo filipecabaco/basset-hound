@@ -2,30 +2,31 @@ package org.bassethound.heuristic
 
 /**
   * Responsible for analysing the data provided by feeders and filter possible candidates from non candidates
+  * @tparam A Type of input
+  * @tparam B Type of the score
   */
-trait Heuristic[A] {
+trait Heuristic[A,B] {
+
   /**
-    * Will be responsible for analysing the content and assert a score for each element
-    * @param content
-    * @return
+    * Will assert a score from the given data and return a tuple of Element / Score
+    * @param elem Element to be analysed
+    * @return Tuple of Element / Score
     */
-  def analyse(content:Stream[A]) : List[A]
+  def analyse(elem:A) : (A,B) = (elem , analyseFunc(elem))
+
+  /**
+    * Function responsible for asserting a score
+    * @param elem Element to be analysed
+    * @return Score asserted
+    */
+  def analyseFunc(elem:A) : B
 
   /**
     * Filter function to be applied by the heuristics filter
-    * @param elem  Element that will be analysed
+    * @param result A tuple of Element / Score retrieved from analysis
     * @return Is it a candidate?
     */
-  def filterFunc(elem : A) : Boolean
+  def filterFunc(result: (A,B)) : Boolean
 
-  /**
-    * According to the specifics of the heuristic this will filter out the possible candidates from the content.
-    *
-    * It uses to the function specified in filterFunc
-    *
-    * @param content Content to be analyzed and filter the candidates out of it
-    * @return The candidates
-    */
-  def filter(content:Stream[A]) : List[A] = content.filter(filterFunc).toList
-
+  def apply(content:Stream[A]) : Stream[(A,B)] = content.map(analyse).filter(filterFunc)
 }
