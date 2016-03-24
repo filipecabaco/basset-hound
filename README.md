@@ -15,8 +15,9 @@ The main components of Basset Hound are:
 point you should be aware of how each heuristic works and what kind of input they prefer (e.g. by word, by line, full text)
 * Heuristics - At this point we actually analyse the stream given from the feeders and attribute a score. This score is
 specified by each heuristic. Since each heuristic specifies it's own score the filtering is also done here.
+* Sniffer - This connects all elements and prepares everything to be returned correctly. 
 
-This way you can have a simple chain of Reader ---> Feeder ---> Heuristic that will provide us the framework for static content analysis.
+This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Sniffer that will provide us the framework for static content analysis.
 
 ## Future Goals
 
