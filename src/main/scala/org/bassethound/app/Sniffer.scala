@@ -12,12 +12,10 @@ import scala.util.Try
 
 class Sniffer(implicit val executionContext : ExecutionContext) {
 
-  private val partial : PartialFunction[Any, Future[Option[(Any , List[(Any,Any) ] )]]] = {
+  def sniff(entry : Any) : PartialFunction[Any, Future[Option[(Any , List[(Any,Any)])]]] = {
     case f : File => fileSniffOut(f)
     case _ => throw new UnsupportedEntryType
   }
-
-  def sniff(entry : Any) = partial(entry)
 
   private def fileSniffOut(file : File) = {
     val readers = Try(FileReader.read(file)).toOption
