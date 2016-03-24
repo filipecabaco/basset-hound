@@ -2,7 +2,7 @@ package org.bassethound.app
 
 import java.io.File
 
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -19,7 +19,9 @@ object Application extends App{
 
   val files : List[File] = args.map(v => new File(v)).toList
 
-  val results = Await.result(new Sniffer().sniffOut(files), 5 minute)
+  val results = files.map(new Sniffer().sniff)
 
-  results.foreach(println)
+  val output = Await.result(Future.sequence(results) , 5 minute)
+
+  output.foreach(println)
 }

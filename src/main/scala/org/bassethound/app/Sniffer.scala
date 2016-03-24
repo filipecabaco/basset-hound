@@ -2,6 +2,7 @@ package org.bassethound.app
 
 import java.io.File
 
+import org.bassethound.exceptions.UnsupportedEntryType
 import org.bassethound.feeder.impl.WordFeeder
 import org.bassethound.heuristic.impl.NumericHeuristic
 import org.bassethound.reader.impl.FileReader
@@ -11,11 +12,16 @@ import scala.util.Try
 
 class Sniffer(implicit val executionContext : ExecutionContext) {
 
-  def sniffOut(files : List[File]) = {
-    val readers = files.flatMap(v => Try(FileReader.read(v)).toOption)
-    val feeders = readers.map(v=> (v.source, WordFeeder.digest(v)))
-    val heuristics = feeders.map(v=> Future((v._1 , new NumericHeuristic().apply(v._2))))
+  private val partial : PartialFunction[Any, Future[Option[(Any , List[(Any,Any) ] )]]] = {
+    case f : File => fileSniffOut(f)
+    case _ => throw new UnsupportedEntryType
+  }
 
-    Future.sequence(heuristics)
+  def sniff(entry : Any) = partial(entry)
+
+  private def fileSniffOut(file : File) = {
+    val readers = Try(FileReader.read(file)).toOption
+    val feeders = readers.map(v=> (v.source, WordFeeder.digest(v)))
+    Future(feeders.map(v => (v._1 , new NumericHeuristic().apply(v._2))))
   }
 }
