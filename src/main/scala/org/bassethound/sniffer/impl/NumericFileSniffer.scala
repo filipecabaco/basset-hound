@@ -1,4 +1,4 @@
-package org.bassethound.sniffer
+package org.bassethound.sniffer.impl
 
 import java.io.File
 
@@ -8,6 +8,7 @@ import org.bassethound.heuristic.Heuristic
 import org.bassethound.heuristic.impl.NumericHeuristic
 import org.bassethound.reader.Reader
 import org.bassethound.reader.impl.FileReader
+import org.bassethound.sniffer.Sniffer
 
 import scala.concurrent.ExecutionContext
 
