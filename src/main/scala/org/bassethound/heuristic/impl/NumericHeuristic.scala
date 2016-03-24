@@ -12,7 +12,7 @@ class NumericHeuristic extends Heuristic[String,Double]{
   override def analyseFunc(elem: String): Double = {
     val count : Double = elem.length
     val cleanedCount : Double = Pattern.replaceAllIn(elem, "").length
-    cleanedCount / count
+    if(cleanedCount == count) -1 else cleanedCount / count //This way we avoid only number strings
   }
 
   override def filterFunc(result: (String, Double)): Boolean = result._2 > 0.4
