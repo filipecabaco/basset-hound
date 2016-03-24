@@ -16,7 +16,7 @@ object Application extends App{
     """.stripMargin)
 
   implicit val executionContext : ExecutionContext = scala.concurrent.ExecutionContext.global
-
+  /**
   val files : List[File] = args.map(v => new File(v)).toList
 
   val results = files.map(new Sniffer().sniff)
@@ -24,4 +24,5 @@ object Application extends App{
   val output = Await.result(Future.sequence(results) , 5 minute)
 
   output.foreach(println)
+  **/
 }
