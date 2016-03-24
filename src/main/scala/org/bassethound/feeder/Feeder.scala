@@ -1,7 +1,5 @@
 package org.bassethound.feeder
 
-import org.bassethound.model.Source
-
 /**
   * This should handle the incoming stream and extract / handle
   * important information to be used by heuristic analyser
@@ -15,5 +13,5 @@ trait Feeder[B] {
     * @param source Incoming String with all the contents from a Reader
     * @return Stream with relevant information
     */
-  def digest(source: Source[_,B]) : Stream[String]
+  def digest(source: (_,Stream[B])) : Stream[String]
 }

@@ -22,13 +22,13 @@ class Sniffer(implicit val executionContext : ExecutionContext) {
 
   private def fileSniffOut(file : File) = {
     val reader = Try(FileReader.read(file)).toOption
-    val feeder = reader.map(v=> (v.source, WordFeeder.digest(v)))
+    val feeder = reader.map(v=> (v._1, WordFeeder.digest(v)))
     Future(feeder.map(v => (v._1 , new NumericHeuristic().apply(v._2))))
   }
 
   private def stringSniffOut(string : String) = {
     val reader = Some(RawTextReader.read(string))
-    val feeder = reader.map(v=> (v.source, WordFeeder.digest(v)))
+    val feeder = reader.map(v=> (v._1, WordFeeder.digest(v)))
     Future(feeder.map(v => (v._1 , new NumericHeuristic().apply(v._2))))
   }
 }

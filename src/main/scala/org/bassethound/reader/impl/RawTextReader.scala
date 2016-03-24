@@ -1,6 +1,5 @@
 package org.bassethound.reader.impl
 
-import org.bassethound.model.Source
 import org.bassethound.reader.Reader
 
 object RawTextReader extends Reader[String,String]{
@@ -10,5 +9,5 @@ object RawTextReader extends Reader[String,String]{
     * @param input Input type of the reader
     * @return A @Source type with the information to be used by the feeder
     */
-  override def read(input: String): Source[String, String] = Source(source = input , content = Stream(input))
+  override def read(input: String): (String, Stream[String]) = (input, Stream(input))
 }
