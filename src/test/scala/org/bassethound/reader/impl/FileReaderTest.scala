@@ -11,7 +11,7 @@ class FileReaderTest extends FunSuite {
 
   test("test file reader") {
     val file = new File(getClass.getResource(BasicInput).getPath)
-    val content = FileReader.read(file)
+    val content = new FileReader().read(file)
 
     content._1 shouldBe file
     content._2.map(v=>v) shouldBe Stream("test 1","test 2")

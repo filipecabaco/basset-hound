@@ -2,7 +2,7 @@ package org.bassethound.reader.impl
 
 import org.bassethound.reader.Reader
 
-object RawTextReader extends Reader[String,String]{
+class RawTextReader extends Reader[String,String]{
   /**
     * Read from the given input and returns the required information
     *

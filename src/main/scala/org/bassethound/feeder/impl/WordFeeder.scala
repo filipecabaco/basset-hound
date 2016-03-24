@@ -5,7 +5,7 @@ import org.bassethound.feeder.Feeder
 /**
   * Provides a Stream of String composed of all the words in the given source
   */
-object WordFeeder extends Feeder[String] {
+class WordFeeder extends Feeder[String,String] {
 
   final val Pattern = "\\w*".r
 
