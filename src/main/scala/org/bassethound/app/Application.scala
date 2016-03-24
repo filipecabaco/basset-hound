@@ -16,13 +16,13 @@ object Application extends App{
     """.stripMargin)
 
   implicit val executionContext : ExecutionContext = scala.concurrent.ExecutionContext.global
-  /**
-  val files : List[File] = args.map(v => new File(v)).toList
+
+  //val files : List[File] = args.map(v => new File(v)).toList // File Example
+  val files : List[String] = args.map(v =>v).toList //Raw text Example
 
   val results = files.map(new Sniffer().sniff)
 
   val output = Await.result(Future.sequence(results) , 5 minute)
-
   output.foreach(println)
-  **/
+
 }
