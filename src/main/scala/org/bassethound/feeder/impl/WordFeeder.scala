@@ -8,7 +8,7 @@ import scala.util.matching.Regex
 /**
   * Provides a Stream of String composed of all the words in the given source
   */
-object WordFeeder extends Feeder[String,String] {
+object WordFeeder extends Feeder[String] {
 
   final val Pattern = "\\w*".r
 
@@ -18,7 +18,7 @@ object WordFeeder extends Feeder[String,String] {
     * @param source Incoming String with all the contents from a Reader
     * @return Stream with relevant information
     */
-  override def digest(source: Source[String, String]): Stream[String] = {
+  override def digest(source: Source[_, String]): Stream[String] = {
     source.content.flatMap(v => Pattern.findAllIn(v)).filterNot(_.isEmpty())
   }
 }

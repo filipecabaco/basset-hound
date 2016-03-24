@@ -7,7 +7,7 @@ class NumericHeuristicTest extends FunSuite {
 
   test("test only numbers in String") {
     val res = new NumericHeuristic().analyseFunc("0000")
-    res shouldBe 1
+    res shouldBe -1
   }
 
   test("test 50% numbers in String") {
@@ -21,12 +21,12 @@ class NumericHeuristicTest extends FunSuite {
   }
 
   test("test filter function with candidate") {
-    val res = new NumericHeuristic().filterFunc(("0",1))
+    val res = new NumericHeuristic().filterFunc(("0A",0.5))
     res shouldBe true
   }
 
   test("test filter function with non candidate") {
-    val res = new NumericHeuristic().filterFunc(("A",0))
+    val res = new NumericHeuristic().filterFunc(("AA",0))
     res shouldBe false
   }
 
