@@ -2,10 +2,9 @@ package org.bassethound.heuristic
 
 import org.scalatest.FunSuite
 import org.scalatest.Matchers._
-
 class HeuristicTest extends FunSuite {
 
-  test("test that filter will filter out the proper candidates from a stream") {
+  test("test that apply will filter out the proper candidates from a stream") {
     val content = Stream("","","a","","b")
     val fakeHeuristic = new Heuristic[String,Boolean]{
       override def analyseFunc(elem: String): Boolean = !elem.isEmpty
@@ -15,5 +14,6 @@ class HeuristicTest extends FunSuite {
 
     fakeHeuristic.apply(content) shouldBe List(("a",true),("b",true))
   }
+
 
 }

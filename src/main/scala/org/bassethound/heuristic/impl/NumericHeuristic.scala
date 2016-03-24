@@ -5,7 +5,7 @@ import org.bassethound.heuristic.Heuristic
 /**
   * Checks the percentage of numbers in a given string
   */
-object NumericHeuristic extends Heuristic[String,Double]{
+class NumericHeuristic extends Heuristic[String,Double]{
   /**
     * Function responsible for asserting a score
     *
