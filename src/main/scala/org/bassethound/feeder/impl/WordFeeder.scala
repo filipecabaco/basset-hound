@@ -1,9 +1,6 @@
 package org.bassethound.feeder.impl
 
 import org.bassethound.feeder.Feeder
-import org.bassethound.model.Source
-
-import scala.util.matching.Regex
 
 /**
   * Provides a Stream of String composed of all the words in the given source
@@ -18,7 +15,7 @@ object WordFeeder extends Feeder[String] {
     * @param source Incoming String with all the contents from a Reader
     * @return Stream with relevant information
     */
-  override def digest(source: Source[_, String]): Stream[String] = {
-    source.content.flatMap(v => Pattern.findAllIn(v)).filterNot(_.isEmpty())
+  override def digest(source: (_, Stream[String])): Stream[String] = {
+    source._2.flatMap(v => Pattern.findAllIn(v)).filterNot(_.isEmpty())
   }
 }

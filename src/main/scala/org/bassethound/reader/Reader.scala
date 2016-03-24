@@ -1,7 +1,5 @@
 package org.bassethound.reader
 
-import org.bassethound.model.Source
-
 /**
   * Represents the readers that will feed the analysis
  *
@@ -15,5 +13,5 @@ trait Reader[A,B] {
     * @param input Input type of the reader
     * @return A @Source type with the information to be used by the feeder
     */
-  def read(input:A):Source[A,B]
+  def read(input:A):(A,Stream[B])
 }
