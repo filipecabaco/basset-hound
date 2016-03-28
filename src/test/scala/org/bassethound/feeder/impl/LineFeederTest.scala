@@ -7,13 +7,13 @@ class LineFeederTest extends FunSuite {
 
   test("test line digest if source content considered lines on stream creation") {
     val source = ("" , Stream("one","two","three"))
-    val res =  LineFeeder.digest(source)
+    val res =  new LineFeeder().digest(source)
     res shouldBe Stream("one", "two", "three")
   }
 
   test("test line digest if source content hasn't considered lines on stream creation") {
     val source = ("" , Stream("one\ntwo", "three"))
-    val res =  LineFeeder.digest(source)
+    val res =  new LineFeeder().digest(source)
     res shouldBe Stream("one", "two", "three")
   }
 

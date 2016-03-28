@@ -6,7 +6,7 @@ import org.bassethound.feeder.Feeder
   * Provides a Stream of String composed of all the lines in the given source
   */
 
-object LineFeeder extends Feeder[String] {
+class LineFeeder extends Feeder[String,String] {
 
   final val Pattern = "\\n".r
 

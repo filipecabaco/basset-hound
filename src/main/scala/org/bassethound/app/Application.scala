@@ -2,6 +2,8 @@ package org.bassethound.app
 
 import java.io.File
 
+import org.bassethound.sniffer.impl.{NumericFileSniffer, NumericStringSniffer}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -17,12 +19,13 @@ object Application extends App{
 
   implicit val executionContext : ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  //val files : List[File] = args.map(v => new File(v)).toList // File Example
-  val files : List[String] = args.map(v =>v).toList //Raw text Example
+  val files : List[File] = args.map(v => new File(v)).toList // File Example
+  val strings : List[String] = args.map(v =>v).toList //Raw text Example
 
-  val results = files.map(new Sniffer().sniff)
+  val filesResults = files.map(new NumericFileSniffer().sniff)
+  val stringsResults = strings.map(new NumericStringSniffer().sniff)
 
-  val output = Await.result(Future.sequence(results) , 5 minute)
+  val output = Await.result(Future.sequence(filesResults ++ stringsResults) , 5 minute)
   output.foreach(println)
 
 }

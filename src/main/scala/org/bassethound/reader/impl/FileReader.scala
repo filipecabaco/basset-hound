@@ -4,7 +4,7 @@ import java.io.File
 
 import org.bassethound.reader.Reader
 
-object FileReader extends Reader[File,String]{
+class FileReader extends Reader[File,String]{
   /**
     * Read from the given input and returns the required information
     *
