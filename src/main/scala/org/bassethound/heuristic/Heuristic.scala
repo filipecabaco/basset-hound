@@ -28,5 +28,5 @@ trait Heuristic[A,B] {
     */
   def filterFunc(result: (A,B)) : Boolean
 
-  def apply(content:Stream[A]) : List[(A,B)] = content.par.map(analyse).filter(filterFunc).toList
+  def apply(content:(Any, Stream[A])) : (Any, List[(A,B)]) = (content._1 , content._2.par.map(analyse).filter(filterFunc).toList)
 }

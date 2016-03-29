@@ -16,7 +16,7 @@ class LineFeeder extends Feeder[String,String] {
     * @param source Incoming String with all the contents from a Reader
     * @return Stream with relevant information
     */
-  override def digest(source: (_, Stream[String])): Stream[String] = {
-     Pattern.split(source._2.mkString("\n")).toStream
+  override def digest(source: (Any, Stream[String])): (Any, Stream[String]) = {
+    (source._1, Pattern.split(source._2.mkString("\n")).toStream)
   }
 }
