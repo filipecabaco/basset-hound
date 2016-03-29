@@ -2,7 +2,7 @@ package org.bassethound.app
 
 import java.io.File
 
-import org.bassethound.sniffer.impl.{NumericFileSniffer, NumericStringSniffer}
+import org.bassethound.sniffer.impl._
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -22,10 +22,17 @@ object Application extends App{
   val files : List[File] = args.map(v => new File(v)).toList // File Example
   val strings : List[String] = args.map(v =>v).toList //Raw text Example
 
-  val filesResults = files.map(new NumericFileSniffer().sniff)
-  val stringsResults = strings.map(new NumericStringSniffer().sniff)
+  val numericAnalysisFilesResults = files.map(new NumericFileSniffer().sniff)
+  val numericAnalysisStringsResults = strings.map(new NumericStringSniffer().sniff)
+  val keywordAnalysisFilesResults = files.map(new KeywordFileSniffer().sniff)
+  val keywordAnalysisStringsResults = strings.map(new KeywordStringSniffer().sniff)
 
-  val output = Await.result(Future.sequence(filesResults ++ stringsResults) , 5 minute)
-  output.foreach(println)
+
+  val output = Await.result(Future.sequence(numericAnalysisFilesResults ++
+    numericAnalysisStringsResults ++
+    keywordAnalysisFilesResults ++
+    keywordAnalysisStringsResults) , 5 minute)
+
+  output.flatten.filter(_._2.nonEmpty).foreach(println)
 
 }

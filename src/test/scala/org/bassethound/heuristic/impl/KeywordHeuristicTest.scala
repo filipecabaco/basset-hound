@@ -12,7 +12,7 @@ class KeywordHeuristicTest extends FunSuite {
     heuristic.analyseFunc("token: pass") shouldBe true
     heuristic.analyseFunc("token: pass //and then some comments") shouldBe true
   }
-  
+
   test("test when keyword exists and does not contains relevant candidate") {
     heuristic.analyseFunc("token - not a secret") shouldBe false
     heuristic.analyseFunc("token :") shouldBe false
