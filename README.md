@@ -36,21 +36,22 @@ This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Snif
 * NumericHeuristic - Given a Stream[String] calculates the percentage of numeric characters and returns elements with more than 40% numeric characters.
     * If only numbers, returns -1 because this are not valid candidates for us
 * KeywordHeuristic - Given a Stream[String] tries to match a regex with the given String
-    * Regex is `(keyword1|keyword2)\s+(separator1|separator2)\s+(\S+)`
+    * Regex example: `(keyword1|keyword2)\s+(separator1|separator2)\s+(\S+)`
     * With this regex we can extract the following groups:
         * Group 1 - Keyword found
         * Group 2 - Separator found
         * Group 3 - Candidate found
+
 ###Sniffers
 
 * NumericFileSniffer - Implements the following flow:
-    * FileReader --> WordFeeder --> NumericHeuristic
+    * ```FileReader --> WordFeeder --> NumericHeuristic```
 * NumericStringSniffer - Implements the following flow:
-    * RawTextReader --> WordFeeder --> NumericHeuristic
+    * ```RawTextReader --> WordFeeder --> NumericHeuristic```
 * KeywordFileSniffer - Implements the following flow:
-    * FileReader --> WordFeeder --> KeywordHeuristic
+    * ```FileReader --> WordFeeder --> KeywordHeuristic```
 * KeywordStringSniffer - Implements the following flow:
-    * RawTextReader --> WordFeeder --> KeywordHeuristic
+    * ```RawTextReader --> WordFeeder --> KeywordHeuristic```
 
 
 
