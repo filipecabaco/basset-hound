@@ -19,6 +19,41 @@ specified by each heuristic. Since each heuristic specifies it's own score the f
 
 This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Sniffer that will provide us the framework for static content analysis.
 
+## Currently implemented
+
+###Readers
+
+* FileReader - Given a java.io.File, transforms each line into a Stream[String]
+* RawTextReader - Given a String, returns that String has a Stream[String]
+
+###Feeders
+
+* WordFeeder - Given a Stream[String] returns a Stream[String] with all the words received
+* LineFeeder - Given a Stream[String] unites all of them and then returns a Stream[String] separated by break-lines
+
+###Heuristics
+
+* NumericHeuristic - Given a Stream[String] calculates the percentage of numeric characters and returns elements with more than 40% numeric characters.
+    * If only numbers, returns -1 because this are not valid candidates for us
+* KeywordHeuristic - Given a Stream[String] tries to match a regex with the given String
+    * Regex is `(keyword1|keyword2)\s+(separator1|separator2)\s+(\S+)`
+    * With this regex we can extract the following groups:
+        * Group 1 - Keyword found
+        * Group 2 - Separator found
+        * Group 3 - Candidate found
+###Sniffers
+
+* NumericFileSniffer - Implements the following flow:
+    * FileReader --> WordFeeder --> NumericHeuristic
+* NumericStringSniffer - Implements the following flow:
+    * RawTextReader --> WordFeeder --> NumericHeuristic
+* KeywordFileSniffer - Implements the following flow:
+    * FileReader --> WordFeeder --> KeywordHeuristic
+* KeywordStringSniffer - Implements the following flow:
+    * RawTextReader --> WordFeeder --> KeywordHeuristic
+
+
+
 ## Future Goals
 
 In the future we want to save and detect future suspect changes in your code to prevent new sensitive information in it.
