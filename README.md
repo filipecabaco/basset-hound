@@ -49,9 +49,9 @@ This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Snif
 * NumericStringSniffer - Implements the following flow:
     * ```RawTextReader --> WordFeeder --> NumericHeuristic```
 * KeywordFileSniffer - Implements the following flow:
-    * ```FileReader --> WordFeeder --> KeywordHeuristic```
+    * ```FileReader --> LineFeeder --> KeywordHeuristic```
 * KeywordStringSniffer - Implements the following flow:
-    * ```RawTextReader --> WordFeeder --> KeywordHeuristic```
+    * ```RawTextReader --> LineFeeder --> KeywordHeuristic```
 
 
 
