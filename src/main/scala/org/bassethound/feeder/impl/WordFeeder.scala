@@ -15,7 +15,7 @@ class WordFeeder extends Feeder[String,String] {
     * @param source Incoming String with all the contents from a Reader
     * @return Stream with relevant information
     */
-  override def digest(source: (_, Stream[String])): Stream[String] = {
-    source._2.flatMap(v => Pattern.findAllIn(v)).filterNot(_.isEmpty())
+  override def digest(source: (Any, Stream[String])): (Any, Stream[String]) = {
+    (source._1, source._2.flatMap(v => Pattern.findAllIn(v)).filterNot(_.isEmpty()))
   }
 }
