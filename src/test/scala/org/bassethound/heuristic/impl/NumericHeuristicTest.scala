@@ -4,30 +4,36 @@ import org.scalatest.FunSuite
 import org.scalatest.Matchers._
 
 class NumericHeuristicTest extends FunSuite {
+  private final val heuristic = new NumericHeuristic()
 
   test("test only numbers in String") {
-    val res = new NumericHeuristic().analyseFunc("0000")
-    res shouldBe -1
+    heuristic.analyseFunc("00000000") shouldBe -1
   }
 
   test("test 50% numbers in String") {
-    val res = new NumericHeuristic().analyseFunc("AA00")
-    res shouldBe 0.5
+    heuristic.analyseFunc("AAAA0000") shouldBe 0.5
   }
 
   test("test 0% numbers in String") {
-    val res = new NumericHeuristic().analyseFunc("AAAA")
-    res shouldBe 0
+    heuristic.analyseFunc("AAAAAAAA") shouldBe 0
+  }
+
+  test("test that strings with low character count are excluded"){
+    heuristic.analyseFunc("00AA") shouldBe -1
+  }
+  
+  test("test that strings with high character count are normally analysed"){
+    heuristic.analyseFunc("0000AAAA") shouldBe 0.5
   }
 
   test("test filter function with candidate") {
-    val res = new NumericHeuristic().filterFunc(("0A",0.5))
-    res shouldBe true
+    heuristic.filterFunc(("0A",0.5)) shouldBe true
   }
 
   test("test filter function with non candidate") {
-    val res = new NumericHeuristic().filterFunc(("AA",0))
-    res shouldBe false
+    heuristic.filterFunc(("AA",0)) shouldBe false
   }
+
+
 
 }
