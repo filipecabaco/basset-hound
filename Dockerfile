@@ -12,7 +12,6 @@ RUN tar -xvf /tmp/sbt/sbt-0.13.11.tgz
 #TODO - Remove the checkout command-line before merge
 WORKDIR /tmp/basset-hound
 RUN git clone https://github.com/filipecabaco/basset-hound.git . && \
-    git checkout command-line && \
     /tmp/sbt/sbt/bin/sbt assembly && \
     cp ./target/scala-2.11/bassethound-assembly-0.1.jar /var/basset-hound/basset-hound.jar && \
     rm -r /tmp/*
