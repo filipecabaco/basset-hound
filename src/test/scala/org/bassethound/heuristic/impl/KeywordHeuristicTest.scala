@@ -7,8 +7,8 @@ class KeywordHeuristicTest extends FunSuite {
   private final val heuristic = new KeywordHeuristic()
   test("test when keyword was found and contains relevant candidate") {
     heuristic.analyseFunc("secret:pass") shouldBe true
-    heuristic.analyseFunc("key = pass") shouldBe true
-    heuristic.analyseFunc("key :pass") shouldBe true
+    heuristic.analyseFunc("secret = pass") shouldBe true
+    heuristic.analyseFunc("token =pass") shouldBe true
     heuristic.analyseFunc("token: pass") shouldBe true
     heuristic.analyseFunc("token: pass //and then some comments") shouldBe true
   }

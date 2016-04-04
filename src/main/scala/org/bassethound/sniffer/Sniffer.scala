@@ -29,7 +29,7 @@ trait  Sniffer[A,B,C,D]{
   def sniff(input : A) = {
     val read = Try(reader.read(input)).toOption
     val feed = read.map(feeder.digest)
-    Future(feed.map(heuristic.apply))
+    Future(feed.map(heuristic.apply).filter(_._2.nonEmpty))
   }
 }
 

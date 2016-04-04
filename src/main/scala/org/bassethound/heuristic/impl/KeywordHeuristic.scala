@@ -3,7 +3,7 @@ package org.bassethound.heuristic.impl
 import org.bassethound.heuristic.Heuristic
 
 class KeywordHeuristic extends Heuristic[String,Boolean]{
-  private final val Keywords = Set("key" , "secret" , "token" , "secret_token")
+  private final val Keywords = Set("secret" , "token")
   private final val Separators = Set("=" , ":")
 
   /*

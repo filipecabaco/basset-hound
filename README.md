@@ -18,6 +18,16 @@ specified by each heuristic. Since each heuristic specifies it's own score the f
 * Sniffer - This connects all elements and prepares everything to be returned correctly. 
 
 This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Sniffer that will provide us the framework for static content analysis.
+## Build & Run
+
+#### SBT
+* To build use  `sbt assembly`
+* To run use `java -jar target/scala-2.11/bassethound-assembly-0.1.jar <folders>` on JAR
+
+#### Docker
+* To build use `docker build -t basset .`
+* To run use `docker run -v <folder>:/tmp/<name> basset`
+    * `<name>` should be unique for each volume
 
 ## Currently implemented
 
