@@ -9,7 +9,6 @@ ADD https://dl.bintray.com/sbt/native-packages/sbt/0.13.11/sbt-0.13.11.tgz .
 RUN tar -xvf /tmp/sbt/sbt-0.13.11.tgz
 
 #Clone/ Compile/ Cleanup Basset-Hound files
-#TODO - Remove the checkout command-line before merge
 WORKDIR /tmp/basset-hound
 RUN git clone https://github.com/filipecabaco/basset-hound.git . && \
     /tmp/sbt/sbt/bin/sbt assembly && \
@@ -21,4 +20,4 @@ WORKDIR /var/basset-hound/
 #Set up volume that will be used by basset-hound to run its scan
 VOLUME /tmp
 
-CMD ["java", "-jar" , "basset-hound.jar", "/tmp"]
+CMD ["java", "-jar" , "basset-hound.jar", "-f" ,"/tmp"]

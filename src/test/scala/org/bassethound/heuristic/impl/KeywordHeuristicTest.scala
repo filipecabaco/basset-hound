@@ -24,11 +24,11 @@ class KeywordHeuristicTest extends FunSuite {
   }
 
   test("test filter function for valid candidate") {
-    heuristic.filterFunc(("var = key",true)) shouldBe true
+    heuristic.filterFunc(true) shouldBe true
   }
 
   test("test filter function for non-candidate") {
-    heuristic.filterFunc(("no secrets here, move along",false)) shouldBe false
+    heuristic.filterFunc(false) shouldBe false
   }
 
 }

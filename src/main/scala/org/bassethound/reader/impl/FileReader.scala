@@ -4,12 +4,10 @@ import java.io.File
 
 import org.bassethound.reader.Reader
 
+/**
+  * Reads a file and returns a stream with the content of a line and the line number (starting from 0)
+  */
 class FileReader extends Reader[File,String]{
-  /**
-    * Read from the given input and returns the required information
-    *
-    * @param input Input type of the reader
-    * @return A @Source type with the information to be used by the feeder
-    */
-  override def read(input: File): (File, Stream[String]) = ( input, scala.io.Source.fromFile(input).getLines().toStream)
+
+  override def read(input: File) = (input, scala.io.Source.fromFile(input,"utf-8").getLines.zipWithIndex.toStream)
 }

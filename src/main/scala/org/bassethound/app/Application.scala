@@ -3,45 +3,47 @@ package org.bassethound.app
 import java.io.File
 
 import org.bassethound.sniffer.impl.{KeywordFileSniffer, NumericFileSniffer}
+import org.bassethound.util.{Aggregators, Files}
 import scopt.OptionParser
 
-import scala.annotation.tailrec
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
+
 object Application extends App{
 
+  private lazy val output = parser.parse(args, Map.empty) match {
+    case Some(options : Map[String,_]) =>
+      options.get("files").map {
+        case v: Seq[_] =>
+          val files = v.map{case f: File => f}
+          processFiles(files)
+      }
+    case _ => None
+  }
   implicit val executionContext : ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  private val parser = new OptionParser[List[String]]("Basset Hound") {
-    arg[Seq[String]]("List of files and directories to be scanned") action {
-      (f,list) => list ++ f
+  private val parser = new OptionParser[Map[String,Any]]("Basset Hound") {
+    opt[Seq[File]]('f', "files") text "List of files and directories to be scanned" action {
+      (args,map) => map.updated("files", args)
     }
   }
 
-  private lazy val output = parser.parse(args, List.empty) match {
-    case Some(list : List[String]) if list.nonEmpty =>
-      val files = listFiles(list.map(v=> new File(v)) , List.empty)
+  private def processFiles(files: Seq[File])={
+    val all = Files.getAll(files , Seq.empty)
 
-      println(s"I found ${files.size} files in total!")
-      println(s"This are that will be scanned: \n\t${files mkString "\n\t"}")
+    println(
+      s"""This are the files to be scanned: \n\t${all mkString "\n\t"}
+         |
+         |A total of ${all.size} files will be analysed.""".stripMargin)
+    val numericFileSniffer = new NumericFileSniffer()
+    val keywordFileSniffer = new KeywordFileSniffer()
 
-      val numericAnalysis = files.map(new NumericFileSniffer().sniff)
-      val keywordAnalysis = files.map(new KeywordFileSniffer().sniff)
-
-      Some(numericAnalysis ++ keywordAnalysis)
-    case _ => None
-  }
-
-  @tailrec
-  private def listFiles(files:List[File], acc: List[File]) : List[File] = {
-    if(files.isEmpty){
-      acc
-    }else{
-      val all = files.partition(_.isDirectory)
-      val next = all._1.flatMap(_.listFiles()).filterNot(_.getName.startsWith(".")) //Exclude private folders
-      listFiles(next, acc ++ all._2)
+    all.map{ f=>
+      Future sequence Seq(
+        Future(numericFileSniffer.sniff(f)),
+        Future(keywordFileSniffer.sniff(f)))
     }
   }
 
@@ -50,10 +52,25 @@ object Application extends App{
       |I'm currently fetching all the files to be analyzed by me so this might take some time.
     """.stripMargin)
 
-  val res = output match {
-    case Some(f) => Await.result(Future.sequence(f) , 10 minute).flatten.mkString("\n")
+  output match {
+    case Some(f) =>
+      val res = f.flatMap(Await.result(_ , 10 minute)).flatten
+      val aggregate = Aggregators.aggregateOnSource(res)
+      println(s"\n\nResults of the analysis: \n${prettyPrint(aggregate)} \n\n")
+      //println(s"\n\n Results of the analysis: \n ${aggregate mkString "\n\n"}")
     case _ => "No arguments received, please check you added a file / folder to scan"
   }
-  println(res)
+
+  private def prettyPrint(m : Map[_,Map[_,Seq[(_,Int,_)]]]) : String = {
+    m.map{ v =>
+      val content = v._2.map{ w =>
+        val content = w._2.map{z=> s"\t\tCandidate: ${z._1} \n\t\tLine: ${z._2 + 1} \n\t\tScore: ${z._3}"} mkString "\n"
+        s"\tHeuristic: ${w._1} \n$content"
+      } mkString "\n"
+      s"Source: ${v._1} \n $content"
+    } mkString "\n"
+  }
+
 }
+
 

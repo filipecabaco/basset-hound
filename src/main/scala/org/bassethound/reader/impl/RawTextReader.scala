@@ -2,12 +2,13 @@ package org.bassethound.reader.impl
 
 import org.bassethound.reader.Reader
 
+/**
+  * Reads a file and returns a stream with the content of the string
+  * and the line number (starting from 0) by splitting by break line
+  */
 class RawTextReader extends Reader[String,String]{
-  /**
-    * Read from the given input and returns the required information
-    *
-    * @param input Input type of the reader
-    * @return A @Source type with the information to be used by the feeder
-    */
-  override def read(input: String): (String, Stream[String]) = (input, Stream(input))
+  override def read(input: String) = {
+    val byLine = "\\r\\n+|\\n".r.split(input)
+    (input, byLine.zipWithIndex.toStream)
+  }
 }

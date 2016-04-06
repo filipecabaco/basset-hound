@@ -8,25 +8,27 @@ package org.bassethound.heuristic
 trait Heuristic[A,B] {
 
   /**
-    * Will assert a score from the given data and return a tuple of Element / Score
-    * @param elem Element to be analysed
-    * @return Tuple of Element / Score
-    */
-  def analyse(elem:A) : (A,B) = (elem , analyseFunc(elem))
-
-  /**
     * Function responsible for asserting a score
-    * @param elem Element to be analysed
+    * @param candidate Element to be analysed
     * @return Score asserted
     */
-  def analyseFunc(elem:A) : B
+  def analyseFunc(candidate:A) : B
 
   /**
     * Filter function to be applied by the heuristics filter
-    * @param result A tuple of Element / Score retrieved from analysis
+    * @param score Score retrieved from analysis
     * @return Is it a candidate?
     */
-  def filterFunc(result: (A,B)) : Boolean
+  def filterFunc(score: B) : Boolean
 
-  def apply(content:(Any, Stream[A])) : (Any, List[(A,B)]) = (content._1 , content._2.par.map(analyse).filter(filterFunc).toList)
+  /**
+    * Will run the analysisFunc filter using filterFunc and return a tuple with Candidate, Line and Score
+    * @param content The content to be analysed
+    * @return A tuple with (Candidate, Line, Score)
+    */
+  def apply(content:(_, Stream[(A,Int)])) : (_, Heuristic[A,B], Seq[(A,Int,B)]) = {
+    val analysis = content._2.map(v=> (v._1, v._2 , analyseFunc(v._1)))
+    val filtered = analysis.filter(v=> filterFunc(v._3)).toList
+    (content._1, this, filtered)
+  }
 }

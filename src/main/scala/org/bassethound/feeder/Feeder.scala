@@ -14,5 +14,5 @@ trait Feeder[A,B] {
     * @param source Incoming String with all the contents from a Reader
     * @return Stream with relevant information
     */
-  def digest(source: (Any,Stream[A])) : (Any, Stream[B])
+  def digest(source: (_,Stream[(A,Int)])) : (_, Stream[(B,Int)])
 }

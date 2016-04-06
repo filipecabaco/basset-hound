@@ -3,20 +3,10 @@ package org.bassethound.feeder.impl
 import org.bassethound.feeder.Feeder
 
 /**
-  * Provides a Stream of String composed of all the lines in the given source
+  * Provides a Stream of String composed of all the lines in the given source with the line number (starting with 0)
   */
-
 class LineFeeder extends Feeder[String,String] {
 
-  final val Pattern = "\\n".r
+  override def digest(source: (_, Stream[(String,Int)])) = (source._1, source._2)
 
-  /**
-    * Receives Stream and should return a stream with the relevant information to be analysed (e.g. Lines , Words, etc)
-    *
-    * @param source Incoming String with all the contents from a Reader
-    * @return Stream with relevant information
-    */
-  override def digest(source: (Any, Stream[String])): (Any, Stream[String]) = {
-    (source._1, Pattern.split(source._2.mkString("\n")).toStream)
-  }
 }

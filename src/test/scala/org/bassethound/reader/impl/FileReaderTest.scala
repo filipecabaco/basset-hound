@@ -14,7 +14,7 @@ class FileReaderTest extends FunSuite {
     val content = new FileReader().read(file)
 
     content._1 shouldBe file
-    content._2.map(v=>v) shouldBe Stream("test 1","test 2")
+    content._2.map(v=>v) shouldBe Stream(("test 1",0),("test 2",1))
   }
 
 }

@@ -3,19 +3,17 @@ package org.bassethound.feeder.impl
 import org.bassethound.feeder.Feeder
 
 /**
-  * Provides a Stream of String composed of all the words in the given source
+  * Provides a Stream of String composed of all the words in the given source with the line number (starting with 0)
   */
 class WordFeeder extends Feeder[String,String] {
 
   final val Pattern = "\\w*".r
 
-  /**
-    * Receives Stream and should return a stream with the relevant information to be analysed (e.g. Lines , Words, etc)
-    *
-    * @param source Incoming String with all the contents from a Reader
-    * @return Stream with relevant information
-    */
-  override def digest(source: (Any, Stream[String])): (Any, Stream[String]) = {
-    (source._1, source._2.flatMap(v => Pattern.findAllIn(v)).filterNot(_.isEmpty()))
+  override def digest(source: (_, Stream[(String,Int)])) = {
+    val words = source._2.flatMap{v=>
+      Pattern.findAllIn(v._1).map((_, v._2))
+    }
+    val filtered = words.filter(_._1.nonEmpty)
+    (source._1, filtered)
   }
 }

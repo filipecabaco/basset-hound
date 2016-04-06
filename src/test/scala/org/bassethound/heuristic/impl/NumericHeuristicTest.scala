@@ -27,11 +27,11 @@ class NumericHeuristicTest extends FunSuite {
   }
 
   test("test filter function with candidate") {
-    heuristic.filterFunc(("0A",0.5)) shouldBe true
+    heuristic.filterFunc(0.5) shouldBe true
   }
 
   test("test filter function with non candidate") {
-    heuristic.filterFunc(("AA",0)) shouldBe false
+    heuristic.filterFunc(0) shouldBe false
   }
 
 

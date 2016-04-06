@@ -26,10 +26,9 @@ trait  Sniffer[A,B,C,D]{
     * @param input The initial input to be processed by the Reader
     * @return Future with the result of the heuristic applied to it
     */
-  def sniff(input : A) = {
-    val read = Try(reader.read(input)).toOption
-    val feed = read.map(feeder.digest)
-    Future(feed.map(heuristic.apply).filter(_._2.nonEmpty))
-  }
+  def sniff(input : A) = Try{
+      val read = reader.read(input)
+      val feed = feeder.digest(read)
+      heuristic.apply(feed)
+    }.toOption.filter(_._3.nonEmpty)
 }
-
