@@ -19,15 +19,72 @@ specified by each heuristic. Since each heuristic specifies it's own score the f
 
 This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Sniffer that will provide us the framework for static content analysis.
 ## Build & Run
-
+### Build
 #### SBT
 * To build use  `sbt assembly`
-* To run use `java -jar target/scala-2.11/bassethound-assembly-0.1.jar <folders>` on JAR
+* To run use `java -jar target/scala-2.11/bassethound-assembly-0.1.jar -f <folders>` on JAR
 
 #### Docker
 * To build use `docker build -t basset .`
 * To run use `docker run -v <folder>:/tmp/<name> basset`
     * `<name>` should be unique for each volume
+
+### Run
+
+`java -jar <assembled jar> -f <Files> -o <Output Path> -t <Output Format>`
+
+####Arguments
+##### Files to Scan
+
+Defined using `-f` or `--files` followed by comma separated paths for directories or files
+
+List of files or directories to be analysed by Basset Hound
+
+##### Output File
+
+Defined using `-o` or `--output` followed by the path of a directory or directory/filename
+
+Target location to save output from analysis
+
+* If file exists, throws exception
+* If file does not exist, creates file with specified name
+* If target specified is a folder, creates file `out`
+
+##### Output Format
+
+Defined using `-t` or `--type` followed by the following options:
+
+* Pretty Print - `-t pretty` - Used for console output
+
+    ```
+    Source: /some/folder/file
+      	Heuristic: NumericHeuristic
+     		Candidate: 1234ABCD
+     		Line: 1
+     		Score: 0.5
+   ```
+     		
+* JSON - `-t json` - Compact JSON
+
+    `{"/some/folder/file":{"NumericHeuristic":[{"_1":"1234ABCD","_2":0,"_3":0.5}]}}`
+
+* Pretty JSON - `-t pretty-json` - Pretty JSON
+
+   ```
+    {
+       "/some/folder/file":{
+         "NumericHeuristic":[
+           {
+             "_1":"1234ABCD",
+             "_2":0,
+             "_3":0.5
+           }
+         ]
+       }
+     }
+   ```
+
+The default behaviour it's to use Pretty Print
 
 ## Currently implemented
 
@@ -62,8 +119,6 @@ This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Snif
     * ```FileReader --> LineFeeder --> KeywordHeuristic```
 * KeywordStringSniffer - Implements the following flow:
     * ```RawTextReader --> LineFeeder --> KeywordHeuristic```
-
-
 
 ## Future Goals
 

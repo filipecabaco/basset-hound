@@ -1,76 +1,91 @@
 package org.bassethound.app
 
-import java.io.File
+import java.io.{File, FileNotFoundException}
+import java.nio.file.FileAlreadyExistsException
 
-import org.bassethound.sniffer.impl.{KeywordFileSniffer, NumericFileSniffer}
-import org.bassethound.util.{Aggregators, Files}
+import org.bassethound.app.output.{Json, Outputs, Pretty}
+import org.bassethound.util.Aggregators
 import scopt.OptionParser
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
-
 object Application extends App{
 
-  private lazy val output = parser.parse(args, Map.empty) match {
-    case Some(options : Map[String,_]) =>
-      options.get("files").map {
+  implicit val executionContext : ExecutionContext = scala.concurrent.ExecutionContext.global
+
+  private var files: Option[Seq[File]] = None
+  private var outputType: Outputs = Outputs.Pretty
+  private var output: Option[File] = None
+
+  private val parser = new OptionParser[Map[Arguments ,_]]("Basset Hound") {
+    opt[Seq[File]]('f', "files") text "List of files and directories to be scanned" action {
+      (args,map) => map.updated(Arguments.Files, args)
+    }
+    opt[String]('t', "type") text "Output type (defaults to pretty print)"  action {
+      (args,map) => map.updated(Arguments.Output, args)
+    }
+    opt[File]('o', "output") text "Output target path "  action {
+      (args,map) => map.updated(Arguments.Target, args)
+    }
+  }
+
+  parser.parse(args, Map.empty) match {
+    case Some(options : Map[Arguments,_]) =>
+      outputType = options.get(Arguments.Output).map{
+        case v : String if v.equalsIgnoreCase("json") => Outputs.Json
+        case v : String if v.equalsIgnoreCase("pretty-json") => Outputs.PrettyJson
+
+      }.getOrElse(Outputs.Pretty)
+
+      output = options.get(Arguments.Target).map{case v : File => v}
+
+      files = options.get(Arguments.Files).map {
         case v: Seq[_] =>
-          val files = v.map{case f: File => f}
-          processFiles(files)
+          v.map{case f: File => f}
       }
     case _ => None
   }
-  implicit val executionContext : ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  private val parser = new OptionParser[Map[String,Any]]("Basset Hound") {
-    opt[Seq[File]]('f', "files") text "List of files and directories to be scanned" action {
-      (args,map) => map.updated("files", args)
-    }
-  }
-
-  private def processFiles(files: Seq[File])={
-    val all = Files.getAll(files , Seq.empty)
-
-    println(
-      s"""This are the files to be scanned: \n\t${all mkString "\n\t"}
-         |
-         |A total of ${all.size} files will be analysed.""".stripMargin)
-    val numericFileSniffer = new NumericFileSniffer()
-    val keywordFileSniffer = new KeywordFileSniffer()
-
-    all.map{ f=>
-      Future sequence Seq(
-        Future(numericFileSniffer.sniff(f)),
-        Future(keywordFileSniffer.sniff(f)))
-    }
-  }
 
   println(
-    """Welcome to Basset-hound
-      |I'm currently fetching all the files to be analyzed by me so this might take some time.
+    s"""Welcome to Basset-hound
+      |I'm currently fetching all the files on your directories / subdirectories to be analyzed by me so this might take some time...
     """.stripMargin)
 
-  output match {
-    case Some(f) =>
-      val res = f.flatMap(Await.result(_ , 10 minute)).flatten
-      val aggregate = Aggregators.aggregateOnSource(res)
-      println(s"\n\nResults of the analysis: \n${prettyPrint(aggregate)} \n\n")
-      //println(s"\n\n Results of the analysis: \n ${aggregate mkString "\n\n"}")
-    case _ => "No arguments received, please check you added a file / folder to scan"
+  val all = files.map(org.bassethound.util.Files.getAll(_ , Seq.empty)) // Get all files
+
+  val analysis = all.map(new Analysis().run) // Run desired analysis
+  val futures = analysis.map{f=> f}.getOrElse(Seq.empty) // Gather all the futures
+  val res = Await.result(Future.sequence(futures) , 10 minute).flatten // Await for result
+  val aggregate = Aggregators.aggregateOnSource(res.flatMap(v=>v)) // Aggregate results to easily worked on
+
+  val out = outputType match {
+    case Outputs.Pretty => Pretty.onSource(aggregate)
+    case Outputs.Json => Json.render(aggregate)
+    case Outputs.PrettyJson => Json.renderPretty(aggregate)
+    case _ => "Unsupported format, please check available formats on documentation"
   }
 
-  private def prettyPrint(m : Map[_,Map[_,Seq[(_,Int,_)]]]) : String = {
-    m.map{ v =>
-      val content = v._2.map{ w =>
-        val content = w._2.map{z=> s"\t\tCandidate: ${z._1} \n\t\tLine: ${z._2 + 1} \n\t\tScore: ${z._3}"} mkString "\n"
-        s"\tHeuristic: ${w._1} \n$content"
-      } mkString "\n"
-      s"Source: ${v._1} \n $content"
-    } mkString "\n"
+  // Check if we expect to save it in a file, if we do save it otherwise print it to the console
+  if(output.isEmpty){
+    println(out)
+  }else {
+    val target = output.map{
+      case f: File if f.exists && !f.isDirectory=>
+        throw new FileAlreadyExistsException(s"$f already exists")  // If file already exists, avoid override by blowing up
+      case f: File if !f.isDirectory =>                             // If it's not a directory, save it
+        org.bassethound.util.Files.write(out,f)
+      case f: File if f.isDirectory =>
+        val newFile = new File(s"${f.getAbsolutePath}/out")         // If it's a directory, create the file out and save it
+        org.bassethound.util.Files.write(out,newFile)
+    }
+
+    println(s"Saved output to file ${target.get}")
   }
+
+
+
 
 }
-
-

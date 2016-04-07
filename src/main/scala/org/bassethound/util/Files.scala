@@ -1,6 +1,6 @@
 package org.bassethound.util
 
-import java.io.File
+import java.io.{BufferedWriter, File, FileWriter}
 
 import scala.annotation.tailrec
 
@@ -24,6 +24,13 @@ object Files {
       val next = all._1.flatMap(_.listFiles()).filterNot(_.getName.startsWith(".")) //Exclude private folders
       getAll(next, acc ++ all._2)
     }
+  }
 
+  def write(c:String , f:File) = {
+    val bf = new BufferedWriter(new FileWriter(f))
+    bf.write(c)
+    bf.flush()
+    bf.close()
+    f
   }
 }
