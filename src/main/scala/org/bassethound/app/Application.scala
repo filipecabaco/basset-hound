@@ -86,6 +86,5 @@ object Application extends App{
   }
 
 
-
-
+  System.exit(0)
 }
