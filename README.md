@@ -4,20 +4,8 @@ Basset Hound objective is to hunt down possible secret candidates by feeding me 
 hidden secrets according to my heuristics.
 
 In the end you'll get an output with the source information where I found this candidate and why I think
-it's sensitive information that shouldn't be there.
+it's sensitive information that should not be there.
 
-## Components
-
-The main components of Basset Hound are:
-
-* Readers - This are in charge of the inputs (files/ http/ raw text)
-* Feeders - After the readers provide the data, this element separates and prepares the data to be analysed, so at this
-point you should be aware of how each heuristic works and what kind of input they prefer (e.g. by word, by line, full text)
-* Heuristics - At this point we actually analyse the stream given from the feeders and attribute a score. This score is
-specified by each heuristic. Since each heuristic specifies it's own score the filtering is also done here.
-* Sniffer - This connects all elements and prepares everything to be returned correctly. 
-
-This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Sniffer that will provide us the framework for static content analysis.
 ## Build & Run
 ### Build
 #### SBT
@@ -29,18 +17,24 @@ This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Snif
 * To run use `docker run -v <folder>:/tmp/<name> basset`
     * `<name>` should be unique for each volume
 
-### Run
+If you want to override settings you can run the following command:
+`docker run -v <Project Path>:/tmp/project -v <Output Path>:/tmp basset java -jar basset-hound.jar -f /tmp/ -t json -o /tmp/result`
+
+This will run basset and save the result on the output folder with the filename out.
+
+
+## Command details
 
 `java -jar <assembled jar> -f <Files> -o <Output Path> -t <Output Format>`
 
-####Arguments
-##### Files to Scan
+###Arguments
+#### Files to Scan
 
 Defined using `-f` or `--files` followed by comma separated paths for directories or files
 
 List of files or directories to be analysed by Basset Hound
 
-##### Output File
+#### Output File
 
 Defined using `-o` or `--output` followed by the path of a directory or directory/filename
 
@@ -50,7 +44,7 @@ Target location to save output from analysis
 * If file does not exist, creates file with specified name
 * If target specified is a folder, creates file `out`
 
-##### Output Format
+#### Output Format
 
 Defined using `-t` or `--type` followed by the following options:
 
@@ -85,6 +79,19 @@ Defined using `-t` or `--type` followed by the following options:
    ```
 
 The default behaviour it's to use Pretty Print
+
+## Components
+
+The main components of Basset Hound are:
+
+* Readers - This are in charge of the inputs (files/ http/ raw text)
+* Feeders - After the readers provide the data, this element separates and prepares the data to be analysed, so at this
+point you should be aware of how each heuristic works and what kind of input they prefer (e.g. by word, by line, full text)
+* Heuristics - At this point we actually analyse the stream given from the feeders and attribute a score. This score is
+specified by each heuristic. Since each heuristic specifies it's own score the filtering is also done here.
+* Sniffer - This connects all elements and prepares everything to be returned correctly.
+
+This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Sniffer that will provide us the framework for static content analysis.
 
 ## Currently implemented
 
