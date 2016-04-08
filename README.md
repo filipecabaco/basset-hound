@@ -7,21 +7,33 @@ In the end you'll get an output with the source information where I found this c
 it's sensitive information that should not be there.
 
 ## Build & Run
-### Build
-#### SBT
-* To build use  `sbt assembly`
-* To run use `java -jar target/scala-2.11/bassethound-assembly-0.1.jar -f <folders>` on JAR
 
-#### Docker
-* To build use `docker build -t basset .`
-* To run use `docker run -v <folder>:/tmp/<name> basset`
-    * `<name>` should be unique for each volume
+### Docker
+
+You can use this projects from https://hub.docker.com/r/filipecabaco/basset-hound/
+
+#### Run 
+
+`docker run -v <folder>:/tmp/<folder> basset`
+
+You can add as many volumes as you want, just be sure the /tmp/ destination is different for each one.
 
 If you want to override settings you can run the following command:
 `docker run -v <Project Path>:/tmp/project -v <Output Path>:/tmp basset java -jar basset-hound.jar -f /tmp/ -t json -o /tmp/result`
 
-This will run basset and save the result on the output folder with the filename out.
+This will run basset and save the result on the output folder with the filename out. To see more about the arguments, please check the `Arguments` section below.
 
+
+### SBT
+#### Run
+
+`java -jar target/scala-2.11/bassethound-assembly-0.1.jar -f <folders>` on JAR
+
+#### Build  
+
+`sbt assembly`
+
+Note: The assembly sbt plugin is included on the project.
 
 ## Command details
 
@@ -84,7 +96,7 @@ Defined using `-t` or `--type` followed by the following options:
      }
    ```
 
-The default behaviour it's to use Pretty Print
+The default behaviour it's to use `Pretty Print`
 
 ## Components
 
@@ -97,21 +109,21 @@ point you should be aware of how each heuristic works and what kind of input the
 specified by each heuristic. Since each heuristic specifies it's own score the filtering is also done here.
 * Sniffer - This connects all elements and prepares everything to be returned correctly.
 
-This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Sniffer that will provide us the framework for static content analysis.
+This way you can have a simple chain of Reader --> Feeder --> Heuristic that will provide us the framework for static content analysis.
 
 ## Currently implemented
 
-###Readers
+### Readers
 
 * FileReader - Given a java.io.File, transforms each line into a Stream[String]
 * RawTextReader - Given a String, returns that String has a Stream[String]
 
-###Feeders
+### Feeders
 
 * WordFeeder - Given a Stream[String] returns a Stream[String] with all the words received
 * LineFeeder - Given a Stream[String] unites all of them and then returns a Stream[String] separated by break-lines
 
-###Heuristics
+### Heuristics
 
 * NumericHeuristic - Given a Stream[String] calculates the percentage of numeric characters and returns elements with more than 40% numeric characters.
     * If only numbers, returns -1 because this are not valid candidates for us
@@ -122,7 +134,7 @@ This way you can have a simple chain of Reader --> Feeder --> Heuristic --> Snif
         * Group 2 - Separator found
         * Group 3 - Candidate found
 
-###Sniffers
+### Sniffers
 
 * NumericFileSniffer - Implements the following flow:
     * ```FileReader --> WordFeeder --> NumericHeuristic```
