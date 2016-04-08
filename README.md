@@ -25,14 +25,20 @@ This will run basset and save the result on the output folder with the filename 
 
 ## Command details
 
-`java -jar <assembled jar> -f <Files> -o <Output Path> -t <Output Format>`
+`java -jar <assembled jar> -f <Files> -e <Exluded Files> -o <Output Path> -t <Output Format>`
 
 ###Arguments
-#### Files to Scan
+#### Files
 
 Defined using `-f` or `--files` followed by comma separated paths for directories or files
 
 List of files or directories to be analysed by Basset Hound
+
+#### Excluded Files
+
+Defined using `-e` or `--excluded` followed by comma separated paths for directories or files
+
+List of files or directories that will not be analysed
 
 #### Output File
 
@@ -44,7 +50,7 @@ Target location to save output from analysis
 * If file does not exist, creates file with specified name
 * If target specified is a folder, creates file `out`
 
-#### Output Format
+#### Output Type
 
 Defined using `-t` or `--type` followed by the following options:
 

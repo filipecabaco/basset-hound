@@ -16,13 +16,17 @@ object Files {
     * @return Accumulator with all files in directories and subdirectories
     */
   @tailrec
-  def getAll(files: Seq[File], acc: Seq[File]): Seq[File] = {
+  def getAll(files: Seq[File],
+             excluded : Option[Seq[File]],
+             acc: Seq[File]): Seq[File] = {
     if (files.isEmpty) {
       acc
     } else {
       val all = files.partition(_.isDirectory)
-      val next = all._1.flatMap(_.listFiles()).filterNot(_.getName.startsWith(".")) //Exclude private folders
-      getAll(next, acc ++ all._2)
+      val next = all._1.flatMap(_.listFiles())
+        .filterNot(_.getName.startsWith(".")) // Remove private folders
+        .filterNot(excluded.getOrElse(Seq.empty).contains) // Remove Excluded folders
+      getAll(next, excluded,acc ++ all._2)
     }
   }
 

@@ -1,6 +1,6 @@
 package org.bassethound.app
 
-import java.io.{File, FileNotFoundException}
+import java.io.File
 import java.nio.file.FileAlreadyExistsException
 
 import org.bassethound.app.output.{Json, Outputs, Pretty}
@@ -13,11 +13,13 @@ import scala.language.postfixOps
 
 object Application extends App{
 
+
   implicit val executionContext : ExecutionContext = scala.concurrent.ExecutionContext.global
 
   private var files: Option[Seq[File]] = None
   private var outputType: Outputs = Outputs.Pretty
   private var output: Option[File] = None
+  private var excluded: Option[Seq[File]] = None
 
   private val parser = new OptionParser[Map[Arguments ,_]]("Basset Hound") {
     opt[Seq[File]]('f', "files") text "List of files and directories to be scanned" action {
@@ -26,8 +28,11 @@ object Application extends App{
     opt[String]('t', "type") text "Output type (defaults to pretty print)"  action {
       (args,map) => map.updated(Arguments.Output, args)
     }
-    opt[File]('o', "output") text "Output target path "  action {
+    opt[File]('o', "output") text "Output target path"  action {
       (args,map) => map.updated(Arguments.Target, args)
+    }
+    opt[Seq[File]]('e', "excluded") text "Excluded files"  action {
+      (args,map) => map.updated(Arguments.Excluded, args)
     }
   }
 
@@ -42,8 +47,11 @@ object Application extends App{
       output = options.get(Arguments.Target).map{case v : File => v}
 
       files = options.get(Arguments.Files).map {
-        case v: Seq[_] =>
-          v.map{case f: File => f}
+        case v: Seq[_] => v.map{case f: File => f}
+      }
+
+      excluded = options.get(Arguments.Excluded).map{
+        case v: Seq[_] => v.map{case f: File => f}
       }
     case _ => None
   }
@@ -54,7 +62,7 @@ object Application extends App{
       |I'm currently fetching all the files on your directories / subdirectories to be analyzed by me so this might take some time...
     """.stripMargin)
 
-  val all = files.map(org.bassethound.util.Files.getAll(_ , Seq.empty)) // Get all files
+  val all = files.map(org.bassethound.util.Files.getAll(_, excluded, Seq.empty)) // Get all files
 
   val analysis = all.map(new Analysis().run) // Run desired analysis
   val futures = analysis.map{f=> f}.getOrElse(Seq.empty) // Gather all the futures
@@ -84,7 +92,4 @@ object Application extends App{
 
     println(s"Saved output to file ${target.get}")
   }
-
-
-  System.exit(0)
 }
