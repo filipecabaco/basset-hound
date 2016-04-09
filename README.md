@@ -42,19 +42,19 @@ Note: The assembly sbt plugin is included on the project.
 ###Arguments
 #### Files
 
-Defined using `-f` or `--files` followed by comma separated paths for directories or files
+Defined using `-f` or `--files` followed by comma separated absolute paths for directories or files
 
 List of files or directories to be analysed by Basset Hound
 
 #### Excluded Files
 
-Defined using `-e` or `--excluded` followed by comma separated paths for directories or files
+Defined using `-e` or `--excluded` followed by comma separated absolute paths for directories or files
 
 List of files or directories that will not be analysed
 
 #### Output File
 
-Defined using `-o` or `--output` followed by the path of a directory or directory/filename
+Defined using `-o` or `--output` followed by the absolute path of a directory or directory/filename
 
 Target location to save output from analysis
 
@@ -97,6 +97,22 @@ Defined using `-t` or `--type` followed by the following options:
    ```
 
 The default behaviour it's to use `Pretty Print`
+
+#### Configuration File
+
+Defined using `-c` or `--conf` followed by the absolute path of the config file
+
+example.conf:
+
+    ```
+    files=[<Files / Directories to check>]
+
+    excluded=[<Files / Directories to exclude>]
+
+    output=<Output target>
+
+    type=<Output Type>
+    ```
 
 ## Components
 

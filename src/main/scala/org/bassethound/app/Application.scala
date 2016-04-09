@@ -3,6 +3,7 @@ package org.bassethound.app
 import java.io.File
 import java.nio.file.FileAlreadyExistsException
 
+import com.typesafe.config.{Config, ConfigFactory}
 import org.bassethound.app.output.{Json, Outputs, Pretty}
 import org.bassethound.util.Aggregators
 import scopt.OptionParser
@@ -10,6 +11,9 @@ import scopt.OptionParser
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
+import scala.collection.JavaConversions._
+import scala.util.Try
+
 
 object Application extends App{
 
@@ -34,6 +38,9 @@ object Application extends App{
     opt[Seq[File]]('e', "excluded") text "Excluded files"  action {
       (args,map) => map.updated(Arguments.Excluded, args)
     }
+    opt[File]('c', "conf") text "Specify a configuration file" action{
+      (args,map) => map.updated(Arguments.Config, args)
+    }
   }
 
   parser.parse(args, Map.empty) match {
@@ -53,6 +60,18 @@ object Application extends App{
       excluded = options.get(Arguments.Excluded).map{
         case v: Seq[_] => v.map{case f: File => f}
       }
+
+      //Override configuration based on config file
+      options.get(Arguments.Config).foreach{
+        case v: File =>
+          val c = ConfigFactory.parseFile(v)
+
+            excluded = Try(c.getStringList("excluded").toSeq.map{v=>new File(v)}).toOption
+            files = Try(c.getStringList("files").toSeq.map{v=>new File(v)}).toOption
+            output = Try(new File(c.getString("output"))).toOption
+            outputType = Try(Outputs.parse(c.getString("type"))).getOrElse(Outputs.Pretty)
+      }
+
     case _ => None
   }
 
@@ -69,12 +88,7 @@ object Application extends App{
   val res = Await.result(Future.sequence(futures) , 10 minute).flatten // Await for result
   val aggregate = Aggregators.aggregateOnSource(res.flatMap(v=>v)) // Aggregate results to easily worked on
 
-  val out = outputType match {
-    case Outputs.Pretty => Pretty.onSource(aggregate)
-    case Outputs.Json => Json.render(aggregate)
-    case Outputs.PrettyJson => Json.renderPretty(aggregate)
-    case _ => "Unsupported format, please check available formats on documentation"
-  }
+  val out = Outputs.out(outputType, aggregate)
 
   // Check if we expect to save it in a file, if we do save it otherwise print it to the console
   if(output.isEmpty){

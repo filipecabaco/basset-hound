@@ -6,4 +6,5 @@ object Arguments {
   case object Output extends Arguments
   case object Target extends Arguments
   case object Excluded extends Arguments
+  case object Config extends Arguments
 }
