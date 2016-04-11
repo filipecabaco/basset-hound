@@ -104,7 +104,8 @@ Defined using `-c` or `--conf` followed by the absolute path of the config file
 
 example.conf:
 
-    ```
+```
+    
     files=[<Files / Directories to check>]
 
     excluded=[<Files / Directories to exclude>]
@@ -112,7 +113,8 @@ example.conf:
     output=<Output target>
 
     type=<Output Type>
-    ```
+    
+```
 
 ## Components
 
