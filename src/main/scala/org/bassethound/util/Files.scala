@@ -30,6 +30,12 @@ object Files {
     }
   }
 
+  /**
+    * Writes content to given file
+    * @param c Content
+    * @param f File
+    * @return Changed file
+    */
   def write(c:String , f:File) = {
     val bf = new BufferedWriter(new FileWriter(f))
     bf.write(c)
@@ -37,4 +43,7 @@ object Files {
     bf.close()
     f
   }
+
+  def getLine(f:File, n: Int): String = scala.io.Source.fromFile(f).getLines.toList(n)
+
 }

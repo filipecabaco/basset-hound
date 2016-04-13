@@ -62,6 +62,16 @@ Target location to save output from analysis
 * If file does not exist, creates file with specified name
 * If target specified is a folder, creates file `out`
 
+#### Aggregate Type
+
+Defined using `-a` or `--aggregate` followed by the following options:
+
+* Source - `-a source` - Aggregate that will return Map(Source, Map(Heuristic, Result))
+* Heuristic - `-a heuristic` - Aggregate that will return Map(Heuristic, Map(Source, Result))
+* Score - `-a score` - Aggregate that will return Map(Source, Map(Line, Result))
+
+Note: When you aggregate on score, the score is summed by line and the candidate is the full line. On pretty print we remove the line
+
 #### Output Type
 
 Defined using `-t` or `--type` followed by the following options:

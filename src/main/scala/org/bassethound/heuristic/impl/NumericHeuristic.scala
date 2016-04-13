@@ -17,5 +17,5 @@ class NumericHeuristic extends Heuristic[String,Double]{
     if(cleanedCount == count) -1 else cleanedCount / count //Check the percentage and if all chars are numbers
   }
 
-  override def filterFunc(score: Double): Boolean = score > 0.4
+  override def filterFunc(score: Double): Boolean = score > 0.3
 }

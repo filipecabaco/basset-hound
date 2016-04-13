@@ -3,15 +3,15 @@ package org.bassethound.app
 import java.io.File
 import java.nio.file.FileAlreadyExistsException
 
-import com.typesafe.config.{Config, ConfigFactory}
-import org.bassethound.app.output.{Json, Outputs, Pretty}
+import com.typesafe.config.ConfigFactory
+import org.bassethound.app.output.OutputType
 import org.bassethound.util.Aggregators
 import scopt.OptionParser
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
-import scala.collection.JavaConversions._
 import scala.util.Try
 
 
@@ -21,9 +21,10 @@ object Application extends App{
   implicit val executionContext : ExecutionContext = scala.concurrent.ExecutionContext.global
 
   private var files: Option[Seq[File]] = None
-  private var outputType: Outputs = Outputs.Pretty
+  private var outputType: OutputType = OutputType.Pretty
   private var output: Option[File] = None
   private var excluded: Option[Seq[File]] = None
+  private var aggregate: AggregateType = AggregateType.OnSource
 
   private val parser = new OptionParser[Map[Arguments ,_]]("Basset Hound") {
     opt[Seq[File]]('f', "files") text "List of files and directories to be scanned" action {
@@ -31,6 +32,9 @@ object Application extends App{
     }
     opt[String]('t', "type") text "Output type (defaults to pretty print)"  action {
       (args,map) => map.updated(Arguments.Output, args)
+    }
+    opt[String]('a', "aggregate") text "Specify the aggregation type" action{
+      (args,map) => map.updated(Arguments.Aggregate, args)
     }
     opt[File]('o', "output") text "Output target path"  action {
       (args,map) => map.updated(Arguments.Target, args)
@@ -41,15 +45,14 @@ object Application extends App{
     opt[File]('c', "conf") text "Specify a configuration file" action{
       (args,map) => map.updated(Arguments.Config, args)
     }
+
   }
 
   parser.parse(args, Map.empty) match {
     case Some(options : Map[Arguments,_]) =>
-      outputType = options.get(Arguments.Output).map{
-        case v : String if v.equalsIgnoreCase("json") => Outputs.Json
-        case v : String if v.equalsIgnoreCase("pretty-json") => Outputs.PrettyJson
+      outputType = OutputType.parse(options.getOrElse(Arguments.Output , "").toString)
 
-      }.getOrElse(Outputs.Pretty)
+      aggregate = AggregateType.parse(options.getOrElse(Arguments.Aggregate, "").toString)
 
       output = options.get(Arguments.Target).map{case v : File => v}
 
@@ -69,7 +72,8 @@ object Application extends App{
             excluded = Try(c.getStringList("excluded").toSeq.map{v=>new File(v)}).toOption
             files = Try(c.getStringList("files").toSeq.map{v=>new File(v)}).toOption
             output = Try(new File(c.getString("output"))).toOption
-            outputType = Try(Outputs.parse(c.getString("type"))).getOrElse(Outputs.Pretty)
+            outputType = Try(OutputType.parse(c.getString("type"))).getOrElse(outputType)
+            aggregate = Try(AggregateType.parse(c.getString("aggregate"))).getOrElse(aggregate)
       }
 
     case _ => None
@@ -86,9 +90,8 @@ object Application extends App{
   val analysis = all.map(new Analysis().run) // Run desired analysis
   val futures = analysis.map{f=> f}.getOrElse(Seq.empty) // Gather all the futures
   val res = Await.result(Future.sequence(futures) , 10 minute).flatten // Await for result
-  val aggregate = Aggregators.aggregateOnSource(res.flatMap(v=>v)) // Aggregate results to easily worked on
-
-  val out = Outputs.out(outputType, aggregate)
+  val aggregated = Aggregators.aggregate(aggregate, res.flatMap(v=>v)) // Aggregation of results
+  val out = OutputType.out(outputType, aggregate, aggregated) //Prepare output
 
   // Check if we expect to save it in a file, if we do save it otherwise print it to the console
   if(output.isEmpty){
