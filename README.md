@@ -19,7 +19,7 @@ You can use this projects from https://hub.docker.com/r/filipecabaco/basset-houn
 You can add as many volumes as you want, just be sure the /tmp/ destination is different for each one.
 
 If you want to override settings you can run the following command:
-`docker run -v <Project Path>:/tmp/project -v <Output Path>:/tmp basset java -jar basset-hound.jar -f /tmp/ -t json -o /tmp/result`
+`docker run -v <Project Path>:/tmp/project -v <Output Path>:/tmp basset java -jar basset-hound.jar -f /tmp/ -o json -t /tmp/result`
 
 This will run basset and save the result on the output folder with the filename out. To see more about the arguments, please check the `Arguments` section below.
 
@@ -37,9 +37,13 @@ Note: The assembly sbt plugin is included on the project.
 
 ## Command details
 
-`java -jar <assembled jar> -f <Files> -e <Exluded Files> -o <Output Path> -t <Output Format>`
+`java -jar <assembled jar> --help -c <Config Path> -f <Files> -e <Exluded Files>  -p <Output Present> -o <Output Format> -t <Output Path> -a <Aggregation Type>`
 
 ###Arguments
+#### Help
+
+ Check all the commands with `--help
+
 #### Files
 
 Defined using `-f` or `--files` followed by comma separated absolute paths for directories or files
@@ -52,15 +56,70 @@ Defined using `-e` or `--excluded` followed by comma separated absolute paths fo
 
 List of files or directories that will not be analysed
 
-#### Output File
+#### Output Present
 
-Defined using `-o` or `--output` followed by the absolute path of a directory or directory/filename
+Defined using `-d` or `--display` followed by the following options
+
+Defines how the output will be presented
+
+* Console - Prints the output on the console
+* File - Saves the output onto a file
+* Report - Saves a HTML report
+    * Note: This will force the output to be of type "JSON" to be used by the report
+
+#### Output Type
+
+Defined using `-o` or `--output` followed by the following options:
+
+* Pretty Print - `-t pretty` - Used for console output
+
+    ```
+    Total occurrences: 1
+    Source: /some/folder/file
+    Occurences: 1
+      	Heuristic: NumericHeuristic
+     		Candidate: 1234ABCD
+     		Line: 1
+     		Score: 0.5
+   ```
+
+* JSON - `-t json` - Compact JSON
+
+    `{"_1":1 "_2":{"/some/folder/file":{"_1":1,"_2":{"NumericHeuristic":[{"_1":"1234ABCD","_2":0,"_3":0.50}]}}}`
+
+* Pretty JSON - `-t pretty-json` - Pretty JSON
+
+   ```
+   "_1":1
+   "_2":{
+        "/some/folder/file":{
+            "_1":1,
+            "_2":{
+            "NumericHeuristic":[
+                {
+                    "_1":"1234ABCD",
+                    "_2":0,
+                    "_3":0.5
+                }
+            ]
+            }
+        }
+    }
+
+   ```
+
+The default behaviour it's to use `Pretty Print`
+
+#### Output Target File
+
+Defined using `-t` or `--target` followed by the absolute path of a directory or directory/filename
 
 Target location to save output from analysis
 
 * If file exists, throws exception
 * If file does not exist, creates file with specified name
 * If target specified is a folder, creates file `out`
+
 
 #### Aggregate Type
 
@@ -72,41 +131,6 @@ Defined using `-a` or `--aggregate` followed by the following options:
 
 Note: When you aggregate on score, the score is summed by line and the candidate is the full line. On pretty print we remove the line
 
-#### Output Type
-
-Defined using `-t` or `--type` followed by the following options:
-
-* Pretty Print - `-t pretty` - Used for console output
-
-    ```
-    Source: /some/folder/file
-      	Heuristic: NumericHeuristic
-     		Candidate: 1234ABCD
-     		Line: 1
-     		Score: 0.5
-   ```
-     		
-* JSON - `-t json` - Compact JSON
-
-    `{"/some/folder/file":{"NumericHeuristic":[{"_1":"1234ABCD","_2":0,"_3":0.5}]}}`
-
-* Pretty JSON - `-t pretty-json` - Pretty JSON
-
-   ```
-    {
-       "/some/folder/file":{
-         "NumericHeuristic":[
-           {
-             "_1":"1234ABCD",
-             "_2":0,
-             "_3":0.5
-           }
-         ]
-       }
-     }
-   ```
-
-The default behaviour it's to use `Pretty Print`
 
 #### Configuration File
 

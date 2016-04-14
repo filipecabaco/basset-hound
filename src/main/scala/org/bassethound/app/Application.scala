@@ -1,10 +1,9 @@
 package org.bassethound.app
 
 import java.io.File
-import java.nio.file.FileAlreadyExistsException
 
 import com.typesafe.config.ConfigFactory
-import org.bassethound.app.output.OutputType
+import org.bassethound.app.output.{OutputDisplay, OutputFormat}
 import org.bassethound.util.Aggregators
 import scopt.OptionParser
 
@@ -21,92 +20,101 @@ object Application extends App{
   implicit val executionContext : ExecutionContext = scala.concurrent.ExecutionContext.global
 
   private var files: Option[Seq[File]] = None
-  private var outputType: OutputType = OutputType.Pretty
-  private var output: Option[File] = None
+  private var output: OutputFormat = OutputFormat.Pretty
+  private var outputDisplay: OutputDisplay = OutputDisplay.Console
+  private var outputTarget: Option[File] = None
   private var excluded: Option[Seq[File]] = None
-  private var aggregate: AggregateType = AggregateType.OnSource
+  private var aggregateType: AggregateType = AggregateType.OnSource
+  private var silent: Boolean = false
 
   private val parser = new OptionParser[Map[Arguments ,_]]("Basset Hound") {
-    opt[Seq[File]]('f', "files") text "List of files and directories to be scanned" action {
+    opt[Seq[File]]('f', "files") text "Specify the list of files and directories to be scanned" action {
       (args,map) => map.updated(Arguments.Files, args)
     }
-    opt[String]('t', "type") text "Output type (defaults to pretty print)"  action {
-      (args,map) => map.updated(Arguments.Output, args)
+    opt[Seq[File]]('e', "excluded") text "Specify the excluded files"  action {
+      (args,map) => map.updated(Arguments.Excluded, args)
+    }
+    opt[String]('d', "display") text "Specify where the output will be displayed / saved"  action {
+      (args,map) => map.updated(Arguments.OutputDisplay, args)
+    }
+    opt[String]('o', "output") text "Specify the output type"  action {
+      (args,map) => map.updated(Arguments.OutputType, args)
+    }
+    opt[File]('t', "target") text "Specify the target location for the output"  action {
+      (args,map) => map.updated(Arguments.OutputTarget, args)
     }
     opt[String]('a', "aggregate") text "Specify the aggregation type" action{
       (args,map) => map.updated(Arguments.Aggregate, args)
     }
-    opt[File]('o', "output") text "Output target path"  action {
-      (args,map) => map.updated(Arguments.Target, args)
+    opt[File]('c', "conf") text "Specify configuration file" action {
+      (args, map) => map.updated(Arguments.Config, args)
     }
-    opt[Seq[File]]('e', "excluded") text "Excluded files"  action {
-      (args,map) => map.updated(Arguments.Excluded, args)
+    opt[Boolean]('s', "silent") text "Run in silent mode" action {
+      (args, map) => map.updated(Arguments.Silent, args)
     }
-    opt[File]('c', "conf") text "Specify a configuration file" action{
-      (args,map) => map.updated(Arguments.Config, args)
-    }
-
+    help("help")
   }
 
   parser.parse(args, Map.empty) match {
     case Some(options : Map[Arguments,_]) =>
-      outputType = OutputType.parse(options.getOrElse(Arguments.Output , "").toString)
 
-      aggregate = AggregateType.parse(options.getOrElse(Arguments.Aggregate, "").toString)
+      aggregateType = AggregateType.parse(options.getOrElse(Arguments.Aggregate, "").toString)
 
-      output = options.get(Arguments.Target).map{case v : File => v}
+      outputDisplay = OutputDisplay.parse(options.getOrElse(Arguments.OutputDisplay, "").toString)
 
-      files = options.get(Arguments.Files).map {
-        case v: Seq[_] => v.map{case f: File => f}
-      }
+      outputTarget = options.get(Arguments.OutputTarget).map{case v : File => v}
 
-      excluded = options.get(Arguments.Excluded).map{
-        case v: Seq[_] => v.map{case f: File => f}
-      }
+      output = OutputFormat.parse(options.getOrElse(Arguments.OutputType , "").toString)
+
+      files = options.get(Arguments.Files).map { case v: Seq[_] => v.map{case f: File => f} }
+
+      excluded = options.get(Arguments.Excluded).map{ case v: Seq[_] => v.map{case f: File => f} }
+
+      silent = options.get(Arguments.Silent).map{case b : Boolean => b}.getOrElse(false)
 
       //Override configuration based on config file
       options.get(Arguments.Config).foreach{
         case v: File =>
           val c = ConfigFactory.parseFile(v)
 
-            excluded = Try(c.getStringList("excluded").toSeq.map{v=>new File(v)}).toOption
-            files = Try(c.getStringList("files").toSeq.map{v=>new File(v)}).toOption
-            output = Try(new File(c.getString("output"))).toOption
-            outputType = Try(OutputType.parse(c.getString("type"))).getOrElse(outputType)
-            aggregate = Try(AggregateType.parse(c.getString("aggregate"))).getOrElse(aggregate)
+          files = Try(c.getStringList("files").toSeq.map{v=>new File(v)}).toOption
+          excluded = Try(c.getStringList("excluded").toSeq.map{v=>new File(v)}).toOption
+          outputDisplay = Try(OutputDisplay.parse(c.getString("display"))).getOrElse(outputDisplay)
+          outputTarget = Try(new File(c.getString("target"))).toOption
+          output = Try(OutputFormat.parse(c.getString("output"))).getOrElse(output)
+          aggregateType = Try(AggregateType.parse(c.getString("aggregate"))).getOrElse(aggregateType)
+          silent = Try(c.getBoolean("silent")).getOrElse(silent)
       }
 
+      //Force the output to be of type JSON if we want a Report
+      output = if(outputDisplay == OutputDisplay.Report) OutputFormat.Json else output
+
+      execute(silent)
     case _ => None
   }
 
-
-  println(
-    s"""Welcome to Basset-hound
-      |I'm currently fetching all the files on your directories / subdirectories to be analyzed by me so this might take some time...
-    """.stripMargin)
-
-  val all = files.map(org.bassethound.util.Files.getAll(_, excluded, Seq.empty)) // Get all files
-
-  val analysis = all.map(new Analysis().run) // Run desired analysis
-  val futures = analysis.map{f=> f}.getOrElse(Seq.empty) // Gather all the futures
-  val res = Await.result(Future.sequence(futures) , 10 minute).flatten // Await for result
-  val aggregated = Aggregators.aggregate(aggregate, res.flatMap(v=>v)) // Aggregation of results
-  val out = OutputType.out(outputType, aggregate, aggregated) //Prepare output
-
-  // Check if we expect to save it in a file, if we do save it otherwise print it to the console
-  if(output.isEmpty){
-    println(out)
-  }else {
-    val target = output.map{
-      case f: File if f.exists && !f.isDirectory=>
-        throw new FileAlreadyExistsException(s"$f already exists")  // If file already exists, avoid override by blowing up
-      case f: File if !f.isDirectory =>                             // If it's not a directory, save it
-        org.bassethound.util.Files.write(out,f)
-      case f: File if f.isDirectory =>
-        val newFile = new File(s"${f.getAbsolutePath}/out")         // If it's a directory, create the file out and save it
-        org.bassethound.util.Files.write(out,newFile)
+  def execute(silent: Boolean = false) = {
+    if(!silent){
+      println(
+        s"""Welcome to Basset-hound
+            |I'm currently fetching all the files on your directories / subdirectories to be analyzed by me so this might take some time...
+            |
+            |My configs are the following:
+            |Files: $files
+            |Excluded: $excluded
+            |Output Display: $outputDisplay
+            |Output: $output
+            |Output Target: $outputTarget
+            |AggregateType: $aggregateType""".stripMargin)
     }
+    val all = files.map(org.bassethound.util.Files.getAll(_, excluded, Seq.empty)) // Get all files
+    val analysis = all.map(new Analysis().run) // Run desired analysis
+    val futures = analysis.map{f=> f}.getOrElse(Seq.empty) // Gather all the futures
+    val res = Await.result(Future.sequence(futures) , 10 minute).flatten // Await for result
+    val aggregated = Aggregators.aggregate(aggregateType, res.flatMap(v=>v)) // Aggregation of results
 
-    println(s"Saved output to file ${target.get}")
+    val out = OutputFormat.out(output, aggregateType, aggregated) //Prepare output
+
+    OutputDisplay.out(outputDisplay, aggregateType, out, outputTarget) // Handle output
   }
 }

@@ -9,7 +9,6 @@ import org.bassethound.heuristic.Heuristic
   * Handles the aggregation of results
   */
 object Aggregators {
-
   /**
     * Aggregate results of various Sniffer's into a Map according to the AggregateType
     *
@@ -18,8 +17,8 @@ object Aggregators {
     * @param res Seq of (Source, Heuristic , Result)
     * @return Map organized based on Aggregate Type
     */
-  def aggregate(aggregateType: AggregateType , res: Seq[(_, Heuristic[_, _], Seq[(_, Int, _)])])= aggregateType match {
-    case AggregateType.OnSource => aggregateOnScore(res)
+  def aggregate(aggregateType: AggregateType , res: Seq[(_, Heuristic[_, _], Seq[(_, Int, _)])]) = aggregateType match {
+    case AggregateType.OnSource => aggregateOnSource(res)
     case AggregateType.OnHeuristic => aggregateOnHeuristic(res)
     case AggregateType.OnScore => aggregateOnScore(res)
   }
@@ -32,26 +31,30 @@ object Aggregators {
     * @param res Seq of (Source, Heuristic , Result)
     * @return Map with Heuristic as a Key with the values of Map [Source, Seq of Result]
     */
-  def aggregateOnHeuristic(res: Seq[(_, Heuristic[_, _], Seq[(_, Int, _)])]) = res.foldLeft(emptyAggregationMap)(
+  def aggregateOnHeuristic(res: Seq[(_, Heuristic[_, _], Seq[(_, Int, _)])]) ={
+    val aggregated = res.foldLeft(emptyAggregationMap)(
     (acc, v: (_, Heuristic[_, _], Seq[(_, Int, _)])) => {
       val heuristic = v._2.getClass.getSimpleName
       val source = v._1.toString
       val updated = acc.getOrElse(heuristic, Map.empty) + (source -> v._3)
       acc.updated(heuristic, updated)})
-
-  private def emptyAggregationMap = Map.empty[String, Map[String, Seq[(_, Int, _)]]]
+    countOccurrences(aggregated)
+  }
 
   /**
     * Aggregate results of various Sniffer's into a Map with the Source as key and a sum of all scores
+    *
     * @param res Seq of (Source, Heuristic , Result)
     * @return Map with Source as a Key with the values of Map[Line, Seq of Result]
     */
   def aggregateOnScore(res: Seq[(_, Heuristic[_,_], Seq[(_,Int,_)])]) = {
-    val scores = aggregateOnSource(res).map(v=> v._1 -> v._2.values.flatMap(v=>v).groupBy(_._2))
-    val scoreByLine = scores.map(v=> v._1 -> v._2.map(v=> extractScores(v._1, v._2.toSeq)))
-    scoreByLine.map(v=> v._1 -> v._2.map{z=>
+    val onSource = aggregateOnSource(res)
+    val scores = onSource._2.map(v=> v._1 -> (v._2._1,v._2._2.values.flatMap(v=>v).groupBy(_._2)))
+    val scoreByLine = scores.map(v=> v._1 -> (v._2._1 ,v._2._2.map(v=> extractScores(v._1, v._2.toSeq))))
+    val sourceWithScore = scoreByLine.map(v=> v._1 -> (v._2._1,v._2._2.map{z=>
       z._1.toString -> Seq((Files.getLine(new File(v._1),z._1),z._1 , z._2))
-    })
+    }))
+    (onSource._1, sourceWithScore)
   }
 
   /**
@@ -62,15 +65,27 @@ object Aggregators {
     * @param res Seq of (Source, Heuristic , Result )
     * @return Map with Source as a Key with the values of Map[Heuristic, Seq of Result]
     */
-  def aggregateOnSource(res : Seq[(_, Heuristic[_, _],Seq[(_, Int, _)])]) = res.foldLeft(emptyAggregationMap)(
-    (acc, v : (_, Heuristic[_, _],Seq[(_, Int, _)])) => {
-      val heuristic = v._2.getClass.getSimpleName
-      val source = v._1.toString
-      val updated = acc.getOrElse(source, Map.empty) + (heuristic -> v._3)
-      acc.updated(source, updated)})
+  def aggregateOnSource(res : Seq[(_, Heuristic[_, _],Seq[(_, Int, _)])]) = {
+    val aggregated = res.foldLeft(emptyAggregationMap)(
+      (acc, v: (_, Heuristic[_, _], Seq[(_, Int, _)])) => {
+        val heuristic = v._2.getClass.getSimpleName
+        val source = v._1.toString
+        val updated = acc.getOrElse(source, Map.empty) + (heuristic -> v._3)
+        acc.updated(source, updated)
+      })
+    countOccurrences(aggregated)
+  }
+
+  /**
+    * Base type to be used by all aggregations
+    *
+    * @return Empty type to be used
+    */
+  private def emptyAggregationMap = Map.empty[String, Map[String, Seq[(_, Int, _)]]]
 
   /**
     * Extracts the scores
+    *
     * @param line Line of the candidates
     * @param res Result tuple
     * @return Line -> Double with summed scores
@@ -81,6 +96,7 @@ object Aggregators {
 
   /**
     * Sum scores
+    *
     * @param acc Accumulator
     * @param v Value from where we should extract the score
     * @return
@@ -89,6 +105,7 @@ object Aggregators {
 
   /**
     * Normalize the results to our own criteria
+    *
     * @param score Score received
     * @return Normalized score
     */
@@ -96,5 +113,18 @@ object Aggregators {
     case v : Double => v
     case v : Boolean if v => 0.3
     case v => throw new UnsupportedOperationException
+  }
+
+  /**
+    * Counts the number of occurrences for a given result
+    * (this can be used to sum up the occurrences of an Heuristic or Source)
+    *
+    * @param m Aggregated map
+    * @return Aggregated map with number of occurrences per element and the total
+    */
+  private def countOccurrences(m:Map[String, Map[String, Seq[(_, Int, _)]]]) ={
+    val withOccurences = m.map(v=> v._1 -> (v._2.foldLeft(0)(_ + _._2.size) , v._2))
+    val total = withOccurences.mapValues(_._1).foldLeft(0)(_ + _._2)
+    (total, withOccurences)
   }
 }
