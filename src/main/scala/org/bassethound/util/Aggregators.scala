@@ -2,7 +2,7 @@ package org.bassethound.util
 
 import java.io.File
 
-import org.bassethound.app.AggregateType
+import org.bassethound.app.output.AggregateType
 import org.bassethound.heuristic.Heuristic
 
 /**
@@ -123,8 +123,8 @@ object Aggregators {
     * @return Aggregated map with number of occurrences per element and the total
     */
   private def countOccurrences(m:Map[String, Map[String, Seq[(_, Int, _)]]]) ={
-    val withOccurences = m.map(v=> v._1 -> (v._2.foldLeft(0)(_ + _._2.size) , v._2))
-    val total = withOccurences.mapValues(_._1).foldLeft(0)(_ + _._2)
-    (total, withOccurences)
+    val withOccurrences = m.map(v=> v._1 -> (v._2.foldLeft(0)(_ + _._2.size) , v._2))
+    val total = withOccurrences.mapValues(_._1).foldLeft(0)(_ + _._2)
+    (total, withOccurrences)
   }
 }

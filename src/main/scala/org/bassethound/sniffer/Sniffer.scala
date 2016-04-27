@@ -4,7 +4,6 @@ import org.bassethound.feeder.Feeder
 import org.bassethound.heuristic.Heuristic
 import org.bassethound.reader.Reader
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 /**
@@ -15,8 +14,6 @@ import scala.util.Try
   * @tparam D Type of the output of the score from the Heuristic
   */
 trait  Sniffer[A,B,C,D]{
-  implicit val executionContext:ExecutionContext
-
   val reader : Reader[A,B]
   val feeder:Feeder[B,C]
   val heuristic: Heuristic[C,D]
@@ -30,5 +27,8 @@ trait  Sniffer[A,B,C,D]{
       val read = reader.read(input)
       val feed = feeder.digest(read)
       heuristic.apply(feed)
-    }.toOption.filter(_._3.nonEmpty)
+    }.filter{
+      case (_,_,candidates:Seq[(C,Int,D)]) => candidates.nonEmpty
+      case _ => false
+    }.toOption
 }

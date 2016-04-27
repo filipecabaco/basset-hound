@@ -1,6 +1,5 @@
 package org.bassethound.app.output
 
-import org.bassethound.app.AggregateType
 /**
   * Handles the output types Basset Hound supports
   */

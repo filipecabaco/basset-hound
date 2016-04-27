@@ -2,8 +2,6 @@ package org.bassethound.app.output
 
 import java.io.File
 
-import org.bassethound.app.AggregateType
-
 /**
   * Handles the output types Basset Hound supports
   */

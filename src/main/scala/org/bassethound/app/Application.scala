@@ -3,7 +3,7 @@ package org.bassethound.app
 import java.io.File
 
 import com.typesafe.config.ConfigFactory
-import org.bassethound.app.output.{OutputDisplay, OutputFormat}
+import org.bassethound.app.output.{AggregateType, OutputDisplay, OutputFormat}
 import org.bassethound.util.Aggregators
 import scopt.OptionParser
 
@@ -70,7 +70,7 @@ object Application extends App{
 
       excluded = options.get(Arguments.Excluded).map{ case v: Seq[_] => v.map{case f: File => f} }
 
-      silent = options.get(Arguments.Silent).map{case b : Boolean => b}.getOrElse(false)
+      silent = options.get(Arguments.Silent).exists{case b : Boolean => b}
 
       //Override configuration based on config file
       options.get(Arguments.Config).foreach{

@@ -4,7 +4,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import org.bassethound.app.AggregateType
+import org.bassethound.app.output.AggregateType
 import org.bassethound.util.Files
 
 object HtmlReport {

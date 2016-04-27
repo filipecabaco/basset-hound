@@ -1,5 +1,4 @@
-package org.bassethound.app
-
+package org.bassethound.app.output
 
 sealed trait AggregateType
 
