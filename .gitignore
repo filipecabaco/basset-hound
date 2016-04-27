@@ -1,3 +1,6 @@
 .idea/
 target/
 src_managed/
+*.html
+*.json
+*.conf
