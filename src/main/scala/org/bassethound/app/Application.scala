@@ -4,7 +4,7 @@ import java.io.File
 
 import com.typesafe.config.ConfigFactory
 import org.bassethound.app.output.{AggregateType, OutputDisplay, OutputFormat}
-import org.bassethound.util.Aggregators
+import org.bassethound.util.aggregator.Aggregators
 import scopt.OptionParser
 
 import scala.collection.JavaConversions._

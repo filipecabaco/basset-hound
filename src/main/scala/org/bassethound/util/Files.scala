@@ -43,7 +43,4 @@ object Files {
     bf.close()
     f
   }
-
-  def getLine(f:File, n: Int): String = scala.io.Source.fromFile(f).getLines.toList(n)
-
 }

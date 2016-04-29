@@ -3,7 +3,7 @@ package org.bassethound.sniffer
 import org.bassethound.feeder.Feeder
 import org.bassethound.heuristic.Heuristic
 import org.bassethound.reader.Reader
-import org.bassethound.util.{MockFeeder, MockHeuristic, MockReader}
+import org.bassethound.util.{MockFeeder, MockBooleanHeuristic, MockReader}
 import org.scalatest.FunSuite
 import org.scalatest.Matchers._
 
@@ -12,7 +12,7 @@ class SnifferTest extends FunSuite{
   test("sniffer works as expected with given reader, feeder, heuristic"){
     val fakeReader = new MockReader
     val fakeFeeder = new MockFeeder
-    val fakeHeuristic = new MockHeuristic
+    val fakeHeuristic = new MockBooleanHeuristic
     val fakeSniffer = new Sniffer[Boolean,Boolean,Boolean,Boolean] {
       override val reader: Reader[Boolean, Boolean] = fakeReader
       override val heuristic: Heuristic[Boolean, Boolean] = fakeHeuristic
@@ -27,7 +27,7 @@ class SnifferTest extends FunSuite{
       override def read(input: Boolean): (Boolean, Stream[(Boolean, Int)]) = ???
     }
     val fakeFeeder = new MockFeeder
-    val fakeHeuristic = new MockHeuristic
+    val fakeHeuristic = new MockBooleanHeuristic
     val fakeSniffer = new Sniffer[Boolean,Boolean,Boolean,Boolean] {
       override val reader: Reader[Boolean, Boolean] = fakeReader
       override val heuristic: Heuristic[Boolean, Boolean] = fakeHeuristic
@@ -41,7 +41,7 @@ class SnifferTest extends FunSuite{
     val fakeFeeder = new Feeder[Boolean,Boolean] {
       override def digest(source: (_, Stream[(Boolean, Int)])): (_, Stream[(Boolean, Int)]) = ???
     }
-    val fakeHeuristic = new MockHeuristic
+    val fakeHeuristic = new MockBooleanHeuristic
     val fakeSniffer = new Sniffer[Boolean,Boolean,Boolean,Boolean] {
       override val reader: Reader[Boolean, Boolean] = fakeReader
       override val heuristic: Heuristic[Boolean, Boolean] = fakeHeuristic
