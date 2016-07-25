@@ -1,4 +1,4 @@
-FROM 1science/sbt:0.13.8-oracle-jre-8
+FROM filipecabaco/sbt:0.13.12
 
 RUN apk --update add git
 
